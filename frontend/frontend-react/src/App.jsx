@@ -112,7 +112,9 @@ function App() {
     })
   }
 
-
+  const filteredItems = items.filter(item => 
+    item.name.toLowerCase().includes(searchItem.toLowerCase())
+  )
 
 
 
@@ -124,6 +126,7 @@ function App() {
         id="search"
         type="text"
         placeholder="Search items..."
+        value={searchItem}
         onChange={(e) => setSearchItem(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter")
@@ -146,7 +149,17 @@ function App() {
       </div>
 
       <div className="input-container">
-        <input id="item" value={newItem} onChange={(e)=> setNewItem(e.target.value)} placeholder="Enter a new item name" />
+        <input 
+          id="item" 
+          value={newItem} 
+          onChange={(e)=> setNewItem(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleAddItem()
+            }
+          }} 
+          placeholder="Enter a new item name" 
+        />
         <button id="addItem" onClick={handleAddItem}>Add Item</button>
       </div>
     </>
