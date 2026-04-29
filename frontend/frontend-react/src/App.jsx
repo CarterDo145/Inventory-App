@@ -9,8 +9,6 @@ function App() {
   const apiBaseUrl = "http://127.0.0.1:8000/api/items/"
   const ledgerApiUrl = "http://127.0.0.1:8000/api/ledger/"
 
-
-
   useEffect(() =>{
     fetch(apiBaseUrl)
       .then(res => res.json())
@@ -19,6 +17,10 @@ function App() {
       })
       .catch(err => console.log("Error fetching items: ", err))
   }, [])
+
+  const filteredItems = items.filter(item => // way to filter items based on search, also used to structure main display of items
+    item.name.toLowerCase().includes(searchItem.toLowerCase())
+  )
 
   // Function to post ledger updates to the backend
   function postLedger(itemId, delta) {
@@ -108,13 +110,11 @@ function App() {
       })
     })
     .catch(err => {
-      console.log("Eror deleting items: ", err)
+      console.log("Error deleting items: ", err)
     })
   }
 
-  const filteredItems = items.filter(item => 
-    item.name.toLowerCase().includes(searchItem.toLowerCase())
-  )
+
 
 
 
@@ -135,7 +135,7 @@ function App() {
       />
 
       <div className="grid-container">
-        {items.map(item => (
+        {filteredItems.map(item => (
           <div className="box" key={item.id}>
             <div className="title">{item.name}</div>
             <div className="middle">
