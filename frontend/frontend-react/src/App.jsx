@@ -4,9 +4,12 @@ import './App.css'
 function App() {
   const [items, setItems] = useState([])
   const [newItem, setNewItem] = useState("")
+  const [searchItem, setSearchItem] = useState("")
 
   const apiBaseUrl = "http://127.0.0.1:8000/api/items/"
   const ledgerApiUrl = "http://127.0.0.1:8000/api/ledger/"
+
+
 
   useEffect(() =>{
     fetch(apiBaseUrl)
@@ -66,8 +69,51 @@ function App() {
   }
 
   function handleAddItem() {
+    const itemName = newItem.trim()
+
+    if (!itemName) {
+      return
+    }
+
+    fetch(apiBaseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({name: itemName})
+    })
+    .then(res => {
+      if (res.status === 400) throw new Error("Item already exists")
+      if (!res.ok) throw new Error("Error adding item")
+        return res.json()
+    })
+    .then(createdItem => {
+      setItems(previousItems => [
+        ...previousItems, createdItem
+      ])
+      setNewItem("")
+    })
+    .catch(err => alert(err.message))
 
   }
+
+  function handleDelete(itemId) {
+    fetch(`${apiBaseUrl}${itemId}/`, {
+      method: "DELETE"
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Failed to delete item")
+      }
+      setItems(previousItems => {
+        return previousItems.filter(item => item.id !== itemId)
+      })
+    })
+    .catch(err => {
+      console.log("Eror deleting items: ", err)
+    })
+  }
+
+
+
 
 
   return (
@@ -78,6 +124,11 @@ function App() {
         id="search"
         type="text"
         placeholder="Search items..."
+        onChange={(e) => setSearchItem(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter")
+            setSearchItem("")
+        }}
       />
 
       <div className="grid-container">
@@ -89,13 +140,14 @@ function App() {
               <div className="count">{item.count}</div>
               <button className="plus" onClick={() => handleUpdate(item.id, 1)}>+</button>
             </div>
+            <button className="delete" onClick={() => handleDelete(item.id)}>DEL</button>
           </div>
         ))}
       </div>
 
       <div className="input-container">
-        <input id="item" value={newItem} onChange={(e)=> handleAddItem} placeholder="Enter a new item name" />
-        <button id="addItem">Add Item</button>
+        <input id="item" value={newItem} onChange={(e)=> setNewItem(e.target.value)} placeholder="Enter a new item name" />
+        <button id="addItem" onClick={handleAddItem}>Add Item</button>
       </div>
     </>
   )
