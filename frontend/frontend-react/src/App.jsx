@@ -119,48 +119,68 @@ function App() {
 
 
   return (
-    <>
-      <h1>Inventory</h1>
-
-      <input
-        id="search"
-        type="text"
-        placeholder="Search items..."
-        value={searchItem}
-        onChange={(e) => setSearchItem(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter")
-            setSearchItem("")
-        }}
-      />
-
-      <div className="grid-container">
-        {filteredItems.map(item => (
-          <div className="box" key={item.id}>
-            <div className="title">{item.name}</div>
-            <div className="middle">
-              <button className="minus" onClick={() => handleUpdate(item.id, -1)}>-</button>
-              <div className="count">{item.count}</div>
-              <button className="plus" onClick={() => handleUpdate(item.id, 1)}>+</button>
-            </div>
-            <button className="delete" onClick={() => handleDelete(item.id)}>DEL</button>
-          </div>
-        ))}
+      <>
+      <div className="bg-[#d2a679] p-4 border border-black rounded-lg mx-3 mb-4">
+        <p className="text-lg font-bold font-['Times_New_Roman']">Home</p>
       </div>
+      <div className="mx-3 p-4 bg-[#f4d9c3] min-h-screen border border-black rounded-lg">
+        <h1 className="text-3xl font-bold mb-4 font-['Times_New_Roman']">Chu Long's Boba Inventory</h1>
 
-      <div className="input-container">
-        <input 
-          id="item" 
-          value={newItem} 
-          onChange={(e)=> setNewItem(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleAddItem()
-            }
-          }} 
-          placeholder="Enter a new item name" 
-        />
-        <button id="addItem" onClick={handleAddItem}>Add Item</button>
+        <div className="flex items-center justify-between my-5">
+          <input
+            className="px-3 py-1 text-base rounded border border-black shadow bg-[#f8f6f0] focus:outline-none focus:ring-0 font-['Times_New_Roman']"
+            id="search"
+            type="text"
+            placeholder="Search items..."
+            value={searchItem}
+            onChange={(e) => setSearchItem(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter")
+                setSearchItem("")
+            }}
+          />
+          <div className="flex items-center gap-2">
+            <input 
+              className="px-3 py-1 text-base rounded border border-black shadow bg-[#f8f6f0] focus:outline-none focus:ring-0 font-['Times_New_Roman']"
+              id="item" 
+              value={newItem} 
+              onChange={(e)=> setNewItem(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddItem()
+                }
+              }} 
+              placeholder="Enter a new item name:" 
+            />
+            <button className="bg-[#efe3d8] border border-black text-black px-3 py-1 rounded hover:bg-[#5a3e36] hover:text-white transition font-['Times_New_Roman']" onClick={handleAddItem}>Add Item</button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-2.5">
+          {filteredItems.map(item => (
+            <div className="relative bg-[#d2a679] border border-[#5a3e36] rounded-2xl p-4 shadow-md hover:shadow-lg hover:scale-[1.02] transition" key={item.id}>
+              <div className="text-2xl h-12 font-['Times_New_Roman']">{item.name}</div>
+              <div className="flex items-baseline justify-center gap-8">
+                <button className="w-12 h-12 text-4xl font-bold flex items-center justify-center cursor-pointer" onClick={() => handleUpdate(item.id, -1)}>-</button>
+                <div className="text-[32px] h-14 font-['Times_New_Roman'] font-bold">{item.count}</div>
+                <button className="w-12 h-12 text-4xl font-bold flex items-center justify-center cursor-pointer" onClick={() => handleUpdate(item.id, 1)}>+</button>
+              </div>
+              <button
+                className="absolute top-3 right-5 w-8 h-8 flex items-center justify-center 
+                  rounded-full bg-transparent hover:text-white
+                  hover:bg-[#3e2a24] hover:shadow-md hover:scale-110
+                  active:scale-95 transition duration-200"
+                onClick={() => {
+                  if (confirm("Delete this item?")) {
+                    handleDelete(item.id)
+                  }
+                }}
+              >
+                <span className="leading-none -translate-y-[1px]">✕</span>
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </>
   )
