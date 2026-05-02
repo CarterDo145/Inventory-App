@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import ItemCard from './itemCard.jsx'
 
 function App() {
   const [items, setItems] = useState([])
@@ -120,66 +121,89 @@ function App() {
 
   return (
       <>
-      <div className="bg-[#d2a679] p-4 border border-black rounded-lg mx-3 mb-4">
-        <p className="text-lg font-bold font-['Times_New_Roman']">Home</p>
-      </div>
-      <div className="mx-3 p-4 bg-[#f4d9c3] min-h-screen border border-black rounded-lg">
-        <h1 className="text-3xl font-bold mb-4 font-['Times_New_Roman']">Chu Long's Boba Inventory</h1>
-
-        <div className="flex items-center justify-between my-5">
-          <input
-            className="px-3 py-1 text-base rounded border border-black shadow bg-[#f8f6f0] focus:outline-none focus:ring-0 font-['Times_New_Roman']"
-            id="search"
-            type="text"
-            placeholder="Search items..."
-            value={searchItem}
-            onChange={(e) => setSearchItem(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter")
-                setSearchItem("")
-            }}
-          />
-          <div className="flex items-center gap-2">
-            <input 
-              className="px-3 py-1 text-base rounded border border-black shadow bg-[#f8f6f0] focus:outline-none focus:ring-0 font-['Times_New_Roman']"
-              id="item" 
-              value={newItem} 
-              onChange={(e)=> setNewItem(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleAddItem()
-                }
-              }} 
-              placeholder="Enter a new item name:" 
-            />
-            <button className="bg-[#efe3d8] border border-black text-black px-3 py-1 rounded hover:bg-[#5a3e36] hover:text-white transition font-['Times_New_Roman']" onClick={handleAddItem}>Add Item</button>
+      <div className="min-h-screen bg-[#FAF7F4] p-6">
+        <div className="max-w-7xl mx-auto bg-[#F7F1EC] rounded-[30px] p-6 border border-[#E9D6C3] shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+          {/*header*/}
+          <div className="bg-[#F1E2D3] rounded-[18px] h-16 flex items-center px-4 gap-6 border border-[#E9D6C3]">
+            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Home 🏠</div>
+            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Statistics 📈</div>
+            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Inventory 📦</div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-2.5">
-          {filteredItems.map(item => (
-            <div className="relative bg-[#d2a679] border border-[#5a3e36] rounded-2xl p-4 shadow-md hover:shadow-lg hover:scale-[1.02] transition" key={item.id}>
-              <div className="text-2xl h-12 font-['Times_New_Roman']">{item.name}</div>
-              <div className="flex items-baseline justify-center gap-8">
-                <button className="w-12 h-12 text-4xl font-bold flex items-center justify-center cursor-pointer" onClick={() => handleUpdate(item.id, -1)}>-</button>
-                <div className="text-[32px] h-14 font-['Times_New_Roman'] font-bold">{item.count}</div>
-                <button className="w-12 h-12 text-4xl font-bold flex items-center justify-center cursor-pointer" onClick={() => handleUpdate(item.id, 1)}>+</button>
-              </div>
-              <button
-                className="absolute top-3 right-5 w-8 h-8 flex items-center justify-center 
-                  rounded-full bg-transparent hover:text-white
-                  hover:bg-[#3e2a24] hover:shadow-md hover:scale-110
-                  active:scale-95 transition duration-200"
-                onClick={() => {
-                  if (confirm("Delete this item?")) {
-                    handleDelete(item.id)
-                  }
+          
+          {/*main inventory container*/}
+          <div className="mt-6 mb-6">
+            <h1 className="text-3xl font-serif text-[#3D2B1F]">
+              Chu Long's Boba Inventory
+            </h1>
+
+            {/* SEARCH + ADD CONTROLS */}
+            <div className="flex items-center justify-between gap-6 my-6 flex-wrap">
+
+              {/* SEARCH */}
+              <input
+                className="bg-[#FAF7F4] border border-[#E9D6C3]
+                  rounded-xl px-4 py-2 w-[260px]
+                  text-[#3D2B1F]
+                  font-serif
+                  focus:outline-none focus:ring-2 focus:ring-[#D98C73]
+                  transition"
+                type="text"
+                placeholder="Search items..."
+                value={searchItem}
+                onChange={(e) => setSearchItem(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") setSearchItem("")
                 }}
-              >
-                <span className="leading-none -translate-y-[1px]">✕</span>
-              </button>
+              />
+
+              {/* ADD ITEM */}
+              <div className="flex items-center gap-3">
+
+                <input
+                  className="bg-[#FAF7F4] border border-[#E9D6C3]
+                    rounded-xl px-4 py-2 w-[260px]
+                    font-serif
+                    text-[#3D2B1F]
+                    focus:outline-none focus:ring-2 focus:ring-[#D98C73]
+                    transition"
+                  value={newItem}
+                  onChange={(e) => setNewItem(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleAddItem()
+                  }}
+                  placeholder="Enter new item..."
+                />
+
+                <button
+                  className="bg-[#E7B79C] text-[#3D2B1F]
+                    px-5 py-2 rounded-xl
+                    border border-[#E9D6C3]
+                    font-serif
+                    hover:bg-[#5a3e36] hover:text-white
+                    hover:shadow-md
+                    active:scale-95
+                    transition"
+                  onClick={handleAddItem}
+                >
+                  Add Item
+                </button>
+
+              </div>
             </div>
-          ))}
+
+            {/*inventory items*/}
+            <div className="grid grid-cols-4 gap-8">
+              {filteredItems.map(item => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  handleDelete={handleDelete}
+                  handleUpdate={handleUpdate}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </>
