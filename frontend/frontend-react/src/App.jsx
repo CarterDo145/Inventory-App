@@ -125,9 +125,9 @@ function App() {
         <div className="max-w-7xl mx-auto bg-[#F7F1EC] rounded-[30px] p-6 border border-[#E9D6C3] shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
           {/*header*/}
           <div className="bg-[#F1E2D3] rounded-[18px] h-16 flex items-center px-4 gap-6 border border-[#E9D6C3]">
-            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Home 🏠</div>
-            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Statistics 📈</div>
-            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Inventory 📦</div>
+            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Home</div>
+            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Statistics</div>
+            <div className="text-[#3D2B1F] font-[Times_New_Roman] text-xl cursor-pointer">Inventory</div>
           </div>
 
           
