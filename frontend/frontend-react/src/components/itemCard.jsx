@@ -1,4 +1,4 @@
-
+import placeholderImg from "../assets/placeholder.jpg";
 
 function ItemCard({ item, handleDelete, handleUpdate }) {
 
@@ -34,9 +34,13 @@ function ItemCard({ item, handleDelete, handleUpdate }) {
         <div
             className="bg-white rounded-[18px] w-full h-[110px]
                 flex items-center justify-center
-                border border-[#E8E2DC] shadow-inner"
+                border border-[#E8E2DC] shadow-inner overflow-hidden"
         >
-            <span className="text-[#C08F72] text-sm">Image</span>
+            <img
+                src={item.image || placeholderImg}
+                alt={item.name}
+                className="w-full h-full object-cover"
+            />
         </div>
 
         {/* item name and count */}

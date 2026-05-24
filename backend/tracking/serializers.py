@@ -4,7 +4,7 @@ from .models import Item, ItemLedger
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['id', 'name', 'count'] 
+        fields = ['id', 'name', 'count', 'image'] 
         read_only_fields = ['count'] 
         # creates a helpful json response
         # deserializing turns the json back to python

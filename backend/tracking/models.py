@@ -5,6 +5,7 @@ from django.utils import timezone
 class Item(models.Model):
     name = models.CharField(max_length=255, unique=True)
     count = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to="item_images/", blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

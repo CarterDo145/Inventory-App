@@ -3,10 +3,12 @@ from rest_framework import viewsets, filters
 from .models import Item, ItemLedger
 from .serializers import ItemSerializer, ItemLedgerSerializer
 from django.db import transaction
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all() # gets all items in the DB
-    serializer_class = ItemSerializer 
+    serializer_class = ItemSerializer
+    parser_classes = [MultiPartParser, FormParser]
 
     filter_backends = [filters.SearchFilter]
     search_fields = ["name"]
@@ -30,22 +32,6 @@ class ItemLedgerViewSet(viewsets.ModelViewSet):
             serializer.save(item=item)
             item.count = new_count
             item.save()
-
-
-
-    
-# learn how to use REACT, come back with questions if any
-# make sure to save the chatgpt learning session and share to chu long
-# can learn by doing, have something to work towards 
-
-# Estimated deadline for code review, send in discord
-# request a code review from Chu Long
-    
-# practice git skills, make a branch, commit, push, create a pull request, request a code review, merge the pull request
-# make sure to fix the front end handling with the count
-
-# make the PR but don't include any of the front end changes, 
-# only the back end and API changes 
 
 
 
