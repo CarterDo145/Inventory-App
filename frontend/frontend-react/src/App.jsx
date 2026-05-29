@@ -77,39 +77,39 @@ function App() {
   }
 
   async function handleAddItem() { //async function to await the promise of the fetch request
-    const itemName = newItem.trim();
+    const itemName = newItem.trim()
 
-    if (!itemName) return;
+    if (!itemName) return
 
-    const formData = new FormData(); // use form data bc no longer sending json, need to send multipart form data for image upload
-    formData.append("name", itemName);
-    formData.append("count", 0);
+    const formData = new FormData() // use form data bc no longer sending json, need to send multipart form data for image upload
+    formData.append("name", itemName)
+    formData.append("count", 0)
 
     if (selectedImage) {
-      formData.append("image", selectedImage);
+      formData.append("image", selectedImage)
     }
 
     try {
       const response = await fetch(apiBaseUrl, {
         method: "POST",
         body: formData,
-      });
+      })
 
       if (response.status === 400) {
-        throw new Error("Item already exists");
+        throw new Error("Item already exists")
       }
 
       if (!response.ok) {
-        throw new Error("Error adding item");
+        throw new Error("Error adding item")
       }
 
-      const createdItem = await response.json();
+      const createdItem = await response.json()
 
-      setItems((previousItems) => [...previousItems, createdItem]);
-      setNewItem("");
-      setSelectedImage(null);
+      setItems((previousItems) => [...previousItems, createdItem])
+      setNewItem("")
+      setSelectedImage(null)
     } catch (err) {
-      alert(err.message);
+      alert(err.message)
     }
   }
 

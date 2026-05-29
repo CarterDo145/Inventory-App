@@ -1,4 +1,4 @@
-import placeholderImg from "../assets/placeholder.jpg";
+import placeholderImg from "../assets/placeholder.jpg"
 
 function ItemCard({ item, handleDelete, handleUpdate }) {
 
@@ -22,9 +22,9 @@ function ItemCard({ item, handleDelete, handleUpdate }) {
                 hover:scale-110 active:scale-95
                 transition"
             onClick={() => {
-            if (confirm("Delete this item?")) {
-                handleDelete(item.id);
-            }
+                if (confirm("Delete this item?")) {
+                    handleDelete(item.id)
+                }
             }}
         >
             ✕
@@ -88,4 +88,4 @@ function ItemCard({ item, handleDelete, handleUpdate }) {
   );
 }
 
-export default ItemCard;
+export default ItemCard
