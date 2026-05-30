@@ -61,4 +61,30 @@ def total_stock_report(request):
 
         running_total -= entry["totalDelta"]
 
+    
+
     return Response(data)
+
+
+
+
+
+@api_view(["GET"])
+def most_popular_items_report(request):
+    data = (
+        ItemLedger.objects
+        .filter(delta__lt=0)
+        .values("item__name")
+        .annotate(used=Sum("delta"))
+        .order_by("used")[:5]
+    )
+
+    result = [
+        {
+            "name": entry["item__name"],
+            "used": abs(entry["used"])
+        }
+        for entry in data
+    ]
+
+    return Response(result)

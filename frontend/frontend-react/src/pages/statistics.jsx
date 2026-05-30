@@ -24,13 +24,23 @@ function Statistics({
     }, [selectedReport])
 
     useEffect(() => { // fetch report data whenever selected report or time frame changes - connected to backend
-        if (selectedReport !== "Total Stock") {
+        let reportUrl = null
+
+        if (selectedReport === "Total Stock") {
+            reportUrl = `http://127.0.0.1:8000/api/reports/total-stock/?timeFrame=${timeFrame}`
+        }
+
+        if (selectedReport === "Most Popular Items") {
+            reportUrl = "http://127.0.0.1:8000/api/reports/most-popular-items/"
+        }
+
+        if (!reportUrl) {
             return
         }
-        fetch(`http://127.0.0.1:8000/api/reports/total-stock/?timeFrame=${timeFrame}`)
+
+        fetch(reportUrl)
             .then((response) => response.json())
             .then((data) => {
-                console.log(data)
                 setReportData(data)
             })
             .catch((error) => {
@@ -55,6 +65,9 @@ function Statistics({
         (total, item) => total + item.count, 0
     )
 
+    const lowStockItems = items.filter(
+        (item) => item.count <= 5
+    )   
 
     return (
         <div>
@@ -131,9 +144,8 @@ function Statistics({
                 )}
 
                 {/* Graphs would go here, using the 'items' prop to generate data based on the selected report and time frame */}
-                <div className="w-full h-[350px] mt-6">
-
-                    {selectedReport === "Total Stock" && (
+                {selectedReport === "Total Stock" && (
+                    <div className="w-full h-[350px] mt-6">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={reportData}>
                                 <XAxis dataKey="period" />
@@ -142,17 +154,98 @@ function Statistics({
                                 <Bar dataKey="totalStock" fill="#D98C73" />
                             </BarChart>
                         </ResponsiveContainer>
-                    )}
+                    </div>
+                )}
 
 
-                    {selectedReport === "Individual Item Stocks" && (
+                {selectedReport === "Individual Item Stocks" && (
+                    <div className="mt-6">
                         <div className="overflow-x-auto">
-                            table
+                            <table className="w-full font-serif text-[#3D2B1F]">
+                                <thead>
+                                    <tr className="border-b border-[#E9D6C3]">
+                                        <th className="text-left py-3 px-4">
+                                            Item
+                                        </th>
+
+                                        <th className="text-center py-3 px-4">
+                                            Count
+                                        </th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {lowStockItems.map((item) => (
+                                        <tr
+                                            key={item.id}
+                                            className="border-b border-[#E9D6C3] hover:bg-[#FAF7F4] transition"
+                                        >
+                                            <td className="py-3 px-4">
+                                                {item.name}
+                                            </td>
+
+                                            <td className="py-3 px-4 text-center">
+                                                {item.count}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                )}
+
+
+                {selectedReport === "Most Popular Items" && (
+                    <div className="w-full h-[350px] mt-6">
+                        <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={reportData}>
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="used" fill="#D98C73" />
+                        </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+
+                {selectedReport === "Low Stock Items" && (
+                    <div className="mt-6">
+                        <table className="w-full font-serif text-[#3D2B1F]">
+                        <thead>
+                            <tr className="border-b border-[#E9D6C3]">
+                            <th className="text-left py-3 px-4">
+                                Item
+                            </th>
+
+                            <th className="text-center py-3 px-4">
+                                Count
+                            </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {lowStockItems.map((item) => (
+                            <tr
+                                key={item.id}
+                                className="border-b border-[#E9D6C3] hover:bg-[#FAF7F4] transition"
+                            >
+                                <td className="py-3 px-4">
+                                {item.name}
+                                </td>
+
+                                <td className="py-3 px-4 text-center">
+                                {item.count}
+                                </td>
+                            </tr>
+                            ))}
+                        </tbody>
+                        </table>
+                    </div>
                     )}
 
 
-                </div>
+
 
             </div>
             )}
