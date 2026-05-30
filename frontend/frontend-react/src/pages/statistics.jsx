@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 
 
 
@@ -8,15 +8,25 @@ function Statistics({
 }) {
     const [querySearch, setQuerySearch] = useState("")
     const [selectedReport, setSelectedReport] = useState(null) // state to track which report is selected
-    const [timeFrame, setTimeFrame] = useState("weekly") // state to track selected time frame for reports that require it
-    const graphRef = useRef() // ref to the graph container, so it will scroll down for the user
+    const [timeFrame, setTimeFrame] = useState("Weekly") // state to track selected time frame for reports that require it
+    
+    const graphRef = useRef(null) // ref to the graph container, so it will scroll down for the user, doesn't rerender when changed
+
+    useEffect(() => { // scroll automatically to the graph section when the user selects a report
+        if (selectedReport && graphRef.current) {
+            graphRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+            })
+        }
+    }, [selectedReport])
 
 
     const reports =  [
-        "Current Inventory Amounts",
-        "Total Stock - Weekly",
+        "Total Stock",
         "Individual Item Stocks",
-        "Daily Comparisons"
+        "Most Popular Items",
+        "Low Stock Items",
     ]
 
     const filteredReports = reports.filter(report =>
@@ -54,13 +64,17 @@ function Statistics({
                     font-serif
                     focus:outline-none focus:ring-2 focus:ring-[#D98C73]
                     transition"
+                    value={timeFrame}
+                    onChange={(e) => setTimeFrame(e.target.value)}
                 >
-                    <option value="daily">Daily</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Yearly">Yearly</option>
                 </select>
             </div>
+
+
             {/* Report Options */}
             <div className="grid grid-cols-2 gap-4 mb-6">
             {filteredReports.map((report) => (
@@ -77,12 +91,35 @@ function Statistics({
             ))}
             </div>
 
-            {/* Current Inventory Amount Bar Chart */}
-            <div className="bg-[#F7F1EC] border border-[#E9D6C3] rounded-[22px] p-6">
+            {/* Selected Report Graph */}
+            {selectedReport && ( // only show graph if a report is selected
+            <div
+                ref={graphRef}
+                className="bg-[#F7F1EC] border border-[#E9D6C3] rounded-[22px] p-6"
+            >
                 <h2 className="text-xl font-serif text-[#3D2B1F] mb-4">
-                    Current Inventory Amounts
+                {selectedReport}
                 </h2>
+
+                <p className="font-serif text-[#3D2B1F]">
+                Time Frame: {timeFrame}
+                </p>
+
+                {/* Graphs would go here, using the 'items' prop to generate data based on the selected report and time frame */}
+                <div className="w-full h-[350px] mt-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={items}>
+                            <XAxis dataKey="name" />
+                            <YAxis dataKey="count" />
+                            <Tooltip />
+                            <Bar dataKey="count" fill="#D98C73" />
+                        </BarChart>
+                    </ResponsiveContainer>
+
+                </div>
+
             </div>
+            )}
 
         </div>
     );
