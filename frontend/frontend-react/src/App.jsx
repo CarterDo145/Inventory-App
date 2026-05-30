@@ -178,8 +178,8 @@ function App() {
           />
 
           <Route path="/statistics" element={<Statistics 
-            
-          />} 
+            items={items}
+            />} 
           />
           
           <Route path="/inventory" element={<Inventory 
