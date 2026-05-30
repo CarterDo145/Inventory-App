@@ -146,20 +146,9 @@ function Statistics({
 
 
                     {selectedReport === "Individual Item Stocks" && (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={items}>
-                            <XAxis
-                                dataKey="name"
-                                angle={-20}
-                                textAnchor="end"
-                                height={70}
-                                interval={0}
-                            />
-                            <YAxis />
-                            <Tooltip />
-                            <Bar dataKey="count" fill="#D98C73" />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <div className="overflow-x-auto">
+                            table
+                        </div>
                     )}
 
 
