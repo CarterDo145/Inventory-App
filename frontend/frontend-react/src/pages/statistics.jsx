@@ -1,4 +1,5 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, 
+    Tooltip, ResponsiveContainer } from "recharts"
 import { useState, useRef, useEffect } from "react"
 
 
@@ -9,7 +10,8 @@ function Statistics({
     const [querySearch, setQuerySearch] = useState("")
     const [selectedReport, setSelectedReport] = useState(null) // state to track which report is selected
     const [timeFrame, setTimeFrame] = useState("Weekly") // state to track selected time frame for reports that require it
-    
+    const [reportData, setReportData] = useState([])
+
     const graphRef = useRef(null) // ref to the graph container, so it will scroll down for the user, doesn't rerender when changed
 
     useEffect(() => { // scroll automatically to the graph section when the user selects a report
@@ -20,6 +22,22 @@ function Statistics({
             })
         }
     }, [selectedReport])
+
+    useEffect(() => { // fetch report data whenever selected report or time frame changes - connected to backend
+        if (selectedReport !== "Total Stock") {
+            return
+        }
+        fetch(`http://127.0.0.1:8000/api/reports/total-stock/?timeFrame=${timeFrame}`)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data)
+                setReportData(data)
+            })
+            .catch((error) => {
+                console.error(error)
+            })
+
+    }, [selectedReport, timeFrame])
 
 
     const reports =  [
@@ -32,6 +50,11 @@ function Statistics({
     const filteredReports = reports.filter(report =>
         report.toLowerCase().includes(querySearch.toLowerCase())
     )
+
+    const totalStock = items.reduce( // calculate total stock across all items
+        (total, item) => total + item.count, 0
+    )
+
 
     return (
         <div>
@@ -101,20 +124,44 @@ function Statistics({
                 {selectedReport}
                 </h2>
 
-                <p className="font-serif text-[#3D2B1F]">
-                Time Frame: {timeFrame}
-                </p>
+                {selectedReport === "Total Stock" && (
+                    <p className="font-serif text-[#3D2B1F]">
+                        Time Frame: {timeFrame}
+                    </p>
+                )}
 
                 {/* Graphs would go here, using the 'items' prop to generate data based on the selected report and time frame */}
                 <div className="w-full h-[350px] mt-6">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={items}>
-                            <XAxis dataKey="name" />
-                            <YAxis dataKey="count" />
+
+                    {selectedReport === "Total Stock" && (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={reportData}>
+                                <XAxis dataKey="period" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="totalStock" fill="#D98C73" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+
+
+                    {selectedReport === "Individual Item Stocks" && (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={items}>
+                            <XAxis
+                                dataKey="name"
+                                angle={-20}
+                                textAnchor="end"
+                                height={70}
+                                interval={0}
+                            />
+                            <YAxis />
                             <Tooltip />
                             <Bar dataKey="count" fill="#D98C73" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+
 
                 </div>
 
