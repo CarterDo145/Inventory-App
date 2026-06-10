@@ -10,7 +10,13 @@ function Inventory({
     setNewItem,
     handleAddItem,
     handleDelete,
-    handleUpdate
+    handleUpdate,
+    textBox,
+    setTextBox,
+    bulkUpdate,
+    setBulkUpdate,
+    handleBulkUpdate,
+    handleUpdateImage
 }) {
 
     const filteredItems = items.filter((item) =>
@@ -107,8 +113,67 @@ function Inventory({
                     >
                     Add Item
                     </button>
+
+                    <button
+                        className="bg-[#E7B79C] text-[#3D2B1F]
+                        px-5 py-2 rounded-xl
+                        border border-[#E9D6C3]
+                        font-serif
+                        hover:bg-[#5a3e36] hover:text-white
+                        hover:shadow-md
+                        active:scale-95
+                        transition"
+                        onClick={() => setTextBox(!textBox)}
+                    >
+                        Bulk Update
+                    </button>
                 </div>
             </div>
+
+            {textBox && (
+                <div className="mb-6 bg-[#F1E2D3] border border-[#E9D6C3] rounded-[18px] p-5">
+                    <p className="font-serif text-[#3D2B1F] text-lg mb-3">
+                        Enter updates one per line:
+                    </p>
+
+                    <textarea
+                        value={bulkUpdate}
+                        onChange={(e) => {
+                            setBulkUpdate(e.target.value)
+
+                            e.target.style.height = "auto"
+                            e.target.style.height = `${Math.max(160, e.target.scrollHeight)}px`
+                        }}
+                        placeholder={`1 Black Tea
+7 Matcha
+3 Thai Tea`}
+                        className="w-full min-h-40 bg-[#FAF7F4]
+                        border border-[#E9D6C3]
+                        rounded-xl px-4 py-3
+                        font-serif text-[#3D2B1F]
+                        focus:outline-none focus:ring-2 focus:ring-[#D98C73]
+                        resize-none overflow-hidden transition"
+                    />
+
+                    <p className="mt-2 text-sm text-[#5a3e36] font-serif">
+                        Format: "qty. to add" "Item Name"
+                    </p>
+
+                    <button
+                        className="mt-4 bg-[#E7B79C] text-[#3D2B1F]
+                        px-5 py-2 rounded-xl
+                        border border-[#E9D6C3]
+                        font-serif
+                        hover:bg-[#5a3e36] hover:text-white
+                        hover:shadow-md
+                        active:scale-95
+                        transition"
+                        onClick={handleBulkUpdate}
+                    >
+                        Update Inventory
+                    </button>
+                </div>
+            )}
 
             {/* Column Labels */}
             <div className="grid grid-cols-[1fr_340px_250px_200px_200px] px-6 pb-4 mb-3 text-lg font-serif text-[#3D2B1F]">
@@ -138,13 +203,28 @@ function Inventory({
                         
                         {/* img and item name */}
                         <div className="flex items-center gap-6">
-                            <div className="w-24 h-20 bg-white rounded-xl overflow-hidden">
-                            <img
-                                src={item.image || placeHolderImg}
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                            />
-                            </div>
+                            <label className="w-24 h-20 bg-white rounded-xl overflow-hidden cursor-pointer group relative">
+                                <img
+                                    src={item.image || placeHolderImg}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover group-hover:opacity-70 transition"
+                                />
+
+                                <div className="absolute inset-0 hidden group-hover:flex items-center justify-center
+                                    bg-black/30 text-white text-xs font-serif">
+                                    Change
+                                </div>
+
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        handleUpdateImage(item.id, e.target.files[0])
+                                        e.target.value = ""
+                                    }}
+                                />
+                            </label>
 
                             <p className="text-xl font-serif text-[#3D2B1F]">
                             {item.name}

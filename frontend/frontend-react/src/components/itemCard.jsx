@@ -1,6 +1,6 @@
 import placeholderImg from "../assets/placeholder.jpg"
 
-function ItemCard({ item, handleDelete, handleUpdate }) {
+function ItemCard({ item, handleUpdate }) {
 
 
   return (
@@ -13,22 +13,6 @@ function ItemCard({ item, handleDelete, handleUpdate }) {
             hover:scale-[1.02]
             transition duration-200 flex flex-col justify-between"
         >
-            
-        {/* delete button */}
-        <button
-            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center
-                rounded-full bg-[#F7F1EC] text-[#3D2B1F]
-                hover:bg-[#5a3e36] hover:text-white
-                hover:scale-110 active:scale-95
-                transition"
-            onClick={() => {
-                if (confirm("Delete this item?")) {
-                    handleDelete(item.id)
-                }
-            }}
-        >
-            ✕
-        </button>
 
         {/* item image placeholder */}
         <div

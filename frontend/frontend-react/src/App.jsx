@@ -13,6 +13,9 @@ function App() {
   const [searchItem, setSearchItem] = useState("")
   const [selectedImage, setSelectedImage] = useState(null)
 
+  const [textBox, setTextBox] = useState(false) // create the text box on the inventory page
+  const [bulkUpdate, setBulkUpdate] = useState("") // state to track the value of the bulk update text area
+
   const apiBaseUrl = "http://127.0.0.1:8000/api/items/"
   const ledgerApiUrl = "http://127.0.0.1:8000/api/ledger/"
 
@@ -130,6 +133,109 @@ function App() {
     })
   }
 
+  async function handleBulkUpdate() {
+    const lines = bulkUpdate
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line !== "")
+
+    if (lines.length === 0) {
+      alert("Please enter at least one update.")
+      return
+    }
+
+    const invalidFormat = []
+    const notFoundItems = []
+    const updatedItems = []
+
+    for (const line of lines) {
+      const parts = line.split(" ")
+      const addCount = Number(parts[0])
+      const itemName = parts.slice(1).join(" ").trim()
+
+      if (isNaN(addCount) || addCount <= 0 || !itemName) {
+        invalidFormat.push(line)
+        continue
+      }
+
+      const existingItem = items.find(
+        item => item.name.toLowerCase() === itemName.toLowerCase()
+      )
+
+      if (!existingItem) {
+        notFoundItems.push(itemName)
+        continue
+      }
+
+      try {
+        await postLedger(existingItem.id, addCount)
+
+        setItems(previousItems =>
+          previousItems.map(item =>
+            item.id === existingItem.id
+              ? { ...item, count: item.count + addCount }
+              : item
+          )
+        )
+
+        updatedItems.push(`${itemName} +${addCount}`)
+      } catch (err) {
+        invalidFormat.push(line)
+      }
+    }
+
+    let message = ""
+
+    if (updatedItems.length > 0) {
+      message += `Updated ${updatedItems.length} item(s):\n`
+      message += updatedItems.map(item => `- ${item}`).join("\n")
+    }
+
+    if (notFoundItems.length > 0) {
+      message += `\n\nItems not found:\n`
+      message += notFoundItems.map(item => `- ${item}`).join("\n")
+    }
+
+    if (invalidFormat.length > 0) {
+      message += `\n\nInvalid lines:\n`
+      message += invalidFormat.map(line => `- ${line}`).join("\n")
+    }
+
+    alert(message)
+
+    setBulkUpdate("")
+    setTextBox(false)
+    
+  }
+
+  async function handleUpdateImage(itemId, imageFile) { // allow the image to be updated
+    if (!imageFile) return
+
+    const formData = new FormData()
+    formData.append("image", imageFile)
+
+    try {
+      const response = await fetch(`${apiBaseUrl}${itemId}/`, {
+        method: "PATCH",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update image")
+      }
+
+      const updatedItem = await response.json()
+
+      setItems(previousItems =>
+        previousItems.map(item =>
+          item.id === itemId ? updatedItem : item
+        )
+      )
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
 
 
 
@@ -170,9 +276,7 @@ function App() {
             newItem={newItem}
             setNewItem={setNewItem}
             setSelectedImage={setSelectedImage}
-            handleAddItem={handleAddItem}
             filteredItems={filteredItems}
-            handleDelete={handleDelete}
             handleUpdate={handleUpdate}
             />} 
           />
@@ -192,6 +296,12 @@ function App() {
             handleAddItem={handleAddItem}
             handleDelete={handleDelete}
             handleUpdate={handleUpdate}
+            textBox={textBox}
+            setTextBox={setTextBox}
+            bulkUpdate={bulkUpdate}
+            setBulkUpdate={setBulkUpdate}
+            handleBulkUpdate={handleBulkUpdate}
+            handleUpdateImage={handleUpdateImage}
             />} 
           />
         </Routes>
