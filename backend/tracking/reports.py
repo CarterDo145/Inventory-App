@@ -5,11 +5,57 @@ from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYea
 from django.utils import timezone
 from datetime import timedelta
 
-from .models import Item, ItemLedger
+from .models import ItemLedger
+
+@api_view(["GET"])
+def most_popular_items_report(request):
+    time_frame = request.GET.get("timeFrame", "Weekly")
+    limit = int(request.GET.get("limit", 5))
+
+    now = timezone.now()
+
+    if time_frame == "Daily":
+        start_date = now - timedelta(days=1)
+
+    elif time_frame == "Weekly":
+        start_date = now - timedelta(weeks=1)
+
+    elif time_frame == "Monthly":
+        start_date = now - timedelta(days=30)
+
+    elif time_frame == "Yearly":
+        start_date = now - timedelta(days=365)
+
+    else:
+        start_date = None
+
+    ledger_query = ItemLedger.objects.filter(delta__lt=0)
+
+    if start_date:
+        ledger_query = ledger_query.filter(
+            occurred_at__gte=start_date
+        )
+
+    data = (
+        ledger_query
+        .values("item__name")
+        .annotate(used=Sum("delta"))
+        .order_by("used")[:limit]
+    )
+
+    result = [
+        {
+            "name": entry["item__name"],
+            "used": abs(entry["used"])
+        }
+        for entry in data
+    ]
+
+    return Response(result)
 
 
 @api_view(["GET"])
-def total_stock_report(request):
+def item_history_report(request):
     time_frame = request.GET.get("timeFrame", "Weekly")
 
     trunc_map = {
@@ -21,70 +67,25 @@ def total_stock_report(request):
 
     trunc_function = trunc_map.get(time_frame, TruncWeek)
 
-    now = timezone.now()
-
-    if time_frame == "Daily":
-        start_date = now - timedelta(days=now.weekday())
-    elif time_frame == "Weekly":
-        start_date = now.replace(day=1)
-    elif time_frame == "Monthly":
-        start_date = now.replace(month=1, day=1)
-    else:
-        start_date = None
-
-    ledger_query = ItemLedger.objects.all()
-
-    if start_date:
-        ledger_query = ledger_query.filter(occurred_at__gte=start_date)
-
-    ledger_by_period = (
-        ledger_query
-        .annotate(period=trunc_function("occurred_at"))
-        .values("period")
-        .annotate(totalDelta=Sum("delta"))
-        .order_by("period")
-    )
-
-    current_total_stock = Item.objects.aggregate(
-        total=Sum("count")
-    )["total"] or 0
-
-    data = []
-
-    running_total = current_total_stock
-
-    for entry in reversed(list(ledger_by_period)):
-        data.insert(0, {
-            "period": entry["period"].strftime("%Y-%m-%d"),
-            "totalStock": running_total,
-        })
-
-        running_total -= entry["totalDelta"]
-
-    
-
-    return Response(data)
-
-
-
-
-
-@api_view(["GET"])
-def most_popular_items_report(request):
     data = (
         ItemLedger.objects
-        .filter(delta__lt=0)
-        .values("item__name")
-        .annotate(used=Sum("delta"))
-        .order_by("used")[:5]
+        .annotate(period=trunc_function("occurred_at"))
+        .values("item__name", "period")
+        .annotate(totalDelta=Sum("delta"))
+        .order_by("item__name", "period")
     )
 
-    result = [
-        {
-            "name": entry["item__name"],
-            "used": abs(entry["used"])
-        }
-        for entry in data
-    ]
+    result = {}
+
+    for entry in data:
+        item_name = entry["item__name"]
+
+        if item_name not in result:
+            result[item_name] = []
+
+        result[item_name].append({
+            "period": entry["period"].strftime("%Y-%m-%d"),
+            "change": entry["totalDelta"]
+        })
 
     return Response(result)

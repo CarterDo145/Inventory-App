@@ -1,5 +1,6 @@
 import placeHolderImg from "../assets/placeholder.jpg"
 import { FaTrash } from "react-icons/fa"
+import { useState } from "react"
 
 function Inventory({
     items,
@@ -16,8 +17,11 @@ function Inventory({
     bulkUpdate,
     setBulkUpdate,
     handleBulkUpdate,
-    handleUpdateImage
+    handleUpdateImage,
+    lowStockItems
 }) {
+
+    const [dismissLowStockAlert, setDismissLowStockAlert] = useState(false)
 
     const filteredItems = items.filter((item) =>
         item.name.toLowerCase().includes(searchItem.toLowerCase())
@@ -47,6 +51,21 @@ function Inventory({
             <h1 className="text-3xl font-serif text-[#3D2B1F] mt-6 mb-6">
                 Chu Long's Boba Shop Inventory
             </h1>
+
+            {lowStockItems.length > 0 && !dismissLowStockAlert && (
+                <div className="mb-6 bg-[#FFE7D0] border border-[#D98C73] rounded-[18px] p-4 flex items-center justify-between gap-4">
+                    <p className="font-serif text-[#3D2B1F]">
+                    Low stock alert: {lowStockItems.map(item => item.name).join(", ")}
+                    </p>
+
+                    <button
+                    className="font-serif text-[#3D2B1F] hover:text-[#5a3e36] cursor-pointer transition"
+                    onClick={() => setDismissLowStockAlert(true)}
+                    >
+                    Dismiss
+                    </button>
+                </div>
+            )}
 
             {/* SEARCH + ADD CONTROLS */}
             <div className="flex items-center justify-between gap-6 my-6 flex-wrap border-b border-[#5a3e36] pb-6">

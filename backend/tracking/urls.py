@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import ItemLedgerViewSet, ItemViewSet
-from .reports import total_stock_report, most_popular_items_report
+from .reports import most_popular_items_report, item_history_report
 
 
 router = DefaultRouter()
@@ -10,6 +10,6 @@ router.register(r'ledger', ItemLedgerViewSet, basename='ledger')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path("reports/total-stock/", total_stock_report),
     path("reports/most-popular-items/", most_popular_items_report),
+    path("reports/item-history/", item_history_report),
 ]

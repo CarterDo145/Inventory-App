@@ -32,6 +32,13 @@ function App() {
     item.name.toLowerCase().includes(searchItem.toLowerCase())
   )
 
+  // Set a threshold for low stock items
+  const lowStockThreshold = 5
+  const lowStockItems = items.filter(
+    item => item.count <= lowStockThreshold
+  )
+  
+
   // Function to post ledger updates to the backend
   function postLedger(itemId, delta) {
     return fetch(ledgerApiUrl, {
@@ -259,6 +266,7 @@ function App() {
             className="text-[#3D2B1F] font-[Times_New_Roman] text-xl"
             >
             Statistics
+
           </Link>
 
           <Link
@@ -266,6 +274,14 @@ function App() {
             className="text-[#3D2B1F] font-[Times_New_Roman] text-xl"
             >
             Inventory
+            {lowStockItems.length > 0 && (
+              <span
+                className="ml-2 bg-[#B90E0A] text-white
+                rounded-full px-2 py-1 text-xs"
+                >
+                {lowStockItems.length}
+              </span>
+            )}
           </Link>
         </div>
 
@@ -283,6 +299,7 @@ function App() {
 
           <Route path="/statistics" element={<Statistics 
             items={items}
+            lowStockItems={lowStockItems}
             />} 
           />
           
@@ -302,6 +319,7 @@ function App() {
             setBulkUpdate={setBulkUpdate}
             handleBulkUpdate={handleBulkUpdate}
             handleUpdateImage={handleUpdateImage}
+            lowStockItems={lowStockItems}
             />} 
           />
         </Routes>
