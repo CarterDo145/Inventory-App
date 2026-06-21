@@ -19,6 +19,7 @@ function App() {
 
   const apiBaseUrl = "http://127.0.0.1:8000/api/items/"
   const ledgerApiUrl = "http://127.0.0.1:8000/api/ledger/"
+  const categoryApiUrl = "http://127.0.0.1:8000/api/categories/"
 
   useEffect(() =>{
     fetch(apiBaseUrl)
@@ -27,6 +28,17 @@ function App() {
         setItems(data)
       })
       .catch(err => console.log("Error fetching items: ", err))
+  }, [])
+
+  useEffect(() => {
+    fetch(categoryApiUrl)
+      .then(res => res.json())
+      .then(data => {
+        setCategories(data)
+      })
+      .catch(err =>
+        console.log("Error fetching categories:", err)
+      )
   }, [])
 
   const filteredItems = items.filter(item => // way to filter items based on search, also used to structure main display of items
@@ -95,6 +107,7 @@ function App() {
     const formData = new FormData() // use form data bc no longer sending json, need to send multipart form data for image upload
     formData.append("name", itemName)
     formData.append("count", 0)
+    formData.append("category", "None")
 
     if (selectedImage) {
       formData.append("image", selectedImage)
@@ -271,6 +284,64 @@ function App() {
   }
 
 
+  async function handleAddCategory(categoryName) {
+    const trimmedName = categoryName.trim()
+
+    if (!trimmedName) return
+
+    try {
+      const response = await fetch(categoryApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmedName }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to add category")
+      }
+
+      const newCategory = await response.json()
+
+      setCategories(prev => [...prev, newCategory])
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleDeleteCategory(category) {
+    if (category.name === "None") {
+      alert("The None category cannot be deleted.")
+      return
+    }
+
+    if (!confirm(`Delete category "${category.name}"?`)) return
+
+    try {
+      const response = await fetch(`${categoryApiUrl}${category.id}/`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to delete category")
+      }
+
+      setCategories(prev =>
+        prev.filter(cat => cat.id !== category.id)
+      )
+
+      setItems(prevItems =>
+        prevItems.map(item =>
+          item.category === category.name
+            ? { ...item, category: "None" }
+            : item
+        )
+      )
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+
 
 
 
@@ -332,7 +403,6 @@ function App() {
           
           <Route path="/inventory" element={<Inventory 
             items={items}
-            setItems={setItems}
             searchItem={searchItem}
             setSearchItem={setSearchItem}
             newItem={newItem}
@@ -350,7 +420,8 @@ function App() {
             lowStockItems={lowStockItems}
             handleCategoryChange={handleCategoryChange}
             categories={categories}
-            setCategories={setCategories}
+            handleAddCategory={handleAddCategory}
+            handleDeleteCategory={handleDeleteCategory}
             />} 
           />
         </Routes>

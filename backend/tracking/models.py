@@ -6,7 +6,7 @@ class Item(models.Model):
     name = models.CharField(max_length=255, unique=True)
     count = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to="item_images/", blank=True, null=True)
-    category = models.CharField(max_length=100, blank=True, default="Uncategorized")
+    category = models.CharField(max_length=100, blank=True, default="None")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -52,3 +52,9 @@ class ItemLedger(models.Model):
     def __str__(self):
         sign = "+" if self.delta >= 0 else ""
         return f"{self.item.name}: {sign}{self.delta} @ {self.occurred_at}"
+    
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name

@@ -4,7 +4,6 @@ import { useState } from "react"
 
 function Inventory({
     items,
-    setItems,
     searchItem,
     setSearchItem,
     newItem,
@@ -22,7 +21,8 @@ function Inventory({
     lowStockItems,
     handleCategoryChange,
     categories,
-    setCategories
+    handleAddCategory,
+    handleDeleteCategory
 }) {
 
     const [dismissLowStockAlert, setDismissLowStockAlert] = useState(false)
@@ -52,55 +52,6 @@ function Inventory({
         handleUpdate(item.id, delta)
     }
 
-    function handleAddCategory() {
-        const categoryName = newCategory.trim()
-
-        if (!categoryName) {
-            return
-        }
-
-        if (
-            categories.some(
-                category =>
-                    category.toLowerCase() === categoryName.toLowerCase()
-            )
-        ) {
-            alert("Category already exists.")
-            return
-        }
-
-        setCategories([...categories, categoryName])
-        setNewCategory("")
-    }
-
-    function handleDeleteCategory(categoryToDelete) {
-        if (categoryToDelete === "None") {
-            alert("The default category cannot be deleted.")
-            return
-        }
-
-        const confirmed = confirm(
-            `Delete category "${categoryToDelete}"?`
-        )
-
-        if (!confirmed) {
-            return
-        }
-
-        setItems(prevItems => // update items that are in the deleted category to have none
-            prevItems.map(item =>
-                item.category === categoryToDelete
-                    ? { ...item, category: "None" }
-                    : item
-            )
-        )
-
-        setCategories( // delete the category from the list
-            categories.filter(
-                category => category !== categoryToDelete
-            )
-        )
-    }
 
     return (
         <div>
@@ -276,7 +227,8 @@ function Inventory({
                             onChange={(e) => setNewCategory(e.target.value)}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
-                                    handleAddCategory()
+                                    handleAddCategory(newCategory)
+                                    setNewCategory("")
                                 }
                             }}
                             placeholder="New category name..."
@@ -287,7 +239,10 @@ function Inventory({
                         />
 
                         <button
-                            onClick={handleAddCategory}
+                            onClick={() => {
+                                handleAddCategory(newCategory)
+                                setNewCategory("")
+                            }}
                             className="bg-[#E7B79C] text-[#3D2B1F]
                             px-5 py-2 rounded-xl
                             border border-[#E9D6C3]
@@ -302,31 +257,27 @@ function Inventory({
                     <div className="space-y-2">
                         {categories.map(category => (
                             <div
-                                key={category}
+                                key={category.id}
                                 className="bg-[#FAF7F4] border border-[#E9D6C3]
                                 rounded-xl px-4 py-2 flex items-center justify-between"
                             >
                                 <span className="font-serif text-[#3D2B1F]">
-                                    {category}
+                                {category.name}
                                 </span>
 
-                                {category === "None" ? (
-                                    <span className="text-sm font-serif text-[#8B7355]">
-                                        Protected
-                                    </span>
+                                {category.name === "None" ? (
+                                <span className="text-sm font-serif text-[#8B7355]">
+                                    Protected
+                                </span>
                                 ) : (
-                                    <button
-                                        onClick={() => handleDeleteCategory(category)}
-                                        className="px-3 py-1 rounded-lg
-                                        bg-[#E7B79C]
-                                        text-[#3D2B1F]
-                                        font-serif
-                                        hover:bg-[#5a3e36]
-                                        hover:text-white
-                                        transition"
-                                    >
-                                        Delete
-                                    </button>
+                                <button
+                                    onClick={() => handleDeleteCategory(category)}
+                                    className="px-3 py-1 rounded-lg bg-[#E7B79C]
+                                    text-[#3D2B1F] font-serif
+                                    hover:bg-[#5a3e36] hover:text-white transition"
+                                >
+                                    Delete
+                                </button>
                                 )}
                             </div>
                         ))}
@@ -411,10 +362,10 @@ function Inventory({
                             >
                                 {categories.map(category => (
                                     <option
-                                        key={category}
-                                        value={category}
+                                        key={category.id}
+                                        value={category.name}
                                     >
-                                        {category}
+                                        {category.name}
                                     </option>
                                 ))}
                             </select>

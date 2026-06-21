@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Item, ItemLedger
+from .models import Item, ItemLedger, Category
 
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,7 +32,10 @@ class ItemLedgerSerializer(serializers.ModelSerializer):
         fields = ['id', 'item', 'delta', 'occurred_at', 'recorded_at']
         read_only_fields = ['id', 'recorded_at']
         
-
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
 
 
 

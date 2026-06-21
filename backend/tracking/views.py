@@ -1,14 +1,14 @@
 from rest_framework.exceptions import ValidationError
 from rest_framework import viewsets, filters
-from .models import Item, ItemLedger
-from .serializers import ItemSerializer, ItemLedgerSerializer
+from .models import Item, ItemLedger, Category
+from .serializers import ItemSerializer, ItemLedgerSerializer, CategorySerializer
 from django.db import transaction
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all() # gets all items in the DB
     serializer_class = ItemSerializer
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     filter_backends = [filters.SearchFilter]
     search_fields = ["name"]
@@ -32,6 +32,16 @@ class ItemLedgerViewSet(viewsets.ModelViewSet):
             serializer.save(item=item)
             item.count = new_count
             item.save()
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all().order_by("name")
+    serializer_class = CategorySerializer
+
+    def perform_destroy(self, instance):
+        if instance.name == "None":
+            raise ValidationError("The default category cannot be deleted.")
+
+        instance.delete()
 
 
 
