@@ -34,7 +34,7 @@ function Home({
             </div>
 
             {/*inventory items*/}
-            <div className="grid grid-cols-5 gap-8">
+            <div className="grid grid-cols-5 gap-4">
                 {filteredItems.map(item => (
                     <ItemCard
                     key={item.id}

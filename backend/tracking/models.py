@@ -6,6 +6,7 @@ class Item(models.Model):
     name = models.CharField(max_length=255, unique=True)
     count = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to="item_images/", blank=True, null=True)
+    category = models.CharField(max_length=100, blank=True, default="Uncategorized")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

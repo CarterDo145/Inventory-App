@@ -12,6 +12,7 @@ function App() {
   const [newItem, setNewItem] = useState("")
   const [searchItem, setSearchItem] = useState("")
   const [selectedImage, setSelectedImage] = useState(null)
+  const [categories, setCategories] = useState(["None"])
 
   const [textBox, setTextBox] = useState(false) // create the text box on the inventory page
   const [bulkUpdate, setBulkUpdate] = useState("") // state to track the value of the bulk update text area
@@ -243,6 +244,32 @@ function App() {
     }
   }
 
+  async function handleCategoryChange(itemId, category) {
+    try {
+      const response = await fetch(`${apiBaseUrl}${itemId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ category }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update category")
+      }
+
+      const updatedItem = await response.json()
+
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === itemId ? updatedItem : item
+        )
+      )
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
 
 
 
@@ -305,6 +332,7 @@ function App() {
           
           <Route path="/inventory" element={<Inventory 
             items={items}
+            setItems={setItems}
             searchItem={searchItem}
             setSearchItem={setSearchItem}
             newItem={newItem}
@@ -320,6 +348,9 @@ function App() {
             handleBulkUpdate={handleBulkUpdate}
             handleUpdateImage={handleUpdateImage}
             lowStockItems={lowStockItems}
+            handleCategoryChange={handleCategoryChange}
+            categories={categories}
+            setCategories={setCategories}
             />} 
           />
         </Routes>

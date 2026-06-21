@@ -19,7 +19,7 @@ function ItemCard({ item, handleUpdate }) {
         // card container
         <div
             className="relative bg-[#E7B79C] border border-[#E9D6C3]
-            rounded-[22px] p-2 min-h-[260px] overflow-hidden
+            rounded-[22px] p-2 min-h-[100px] overflow-hidden
             shadow-[0_10px_25px_rgba(61,43,31,0.15)]
             transition duration-200"
 
@@ -37,7 +37,7 @@ function ItemCard({ item, handleUpdate }) {
                 
                 {/* item image placeholder */}
                 <div
-                    className="bg-white rounded-[18px] w-full h-[110px]
+                    className="bg-white rounded-[18px] w-full h-[75px]
                         flex items-center justify-center
                         border border-[#E8E2DC] shadow-inner overflow-hidden"
                 >

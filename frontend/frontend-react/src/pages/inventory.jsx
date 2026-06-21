@@ -4,6 +4,7 @@ import { useState } from "react"
 
 function Inventory({
     items,
+    setItems,
     searchItem,
     setSearchItem,
     newItem,
@@ -18,10 +19,15 @@ function Inventory({
     setBulkUpdate,
     handleBulkUpdate,
     handleUpdateImage,
-    lowStockItems
+    lowStockItems,
+    handleCategoryChange,
+    categories,
+    setCategories
 }) {
 
     const [dismissLowStockAlert, setDismissLowStockAlert] = useState(false)
+    const [categoryBox, setCategoryBox] = useState(false)
+    const [newCategory, setNewCategory] = useState("")
 
     const filteredItems = items.filter((item) =>
         item.name.toLowerCase().includes(searchItem.toLowerCase())
@@ -44,6 +50,56 @@ function Inventory({
 
         const delta = newCount - item.count
         handleUpdate(item.id, delta)
+    }
+
+    function handleAddCategory() {
+        const categoryName = newCategory.trim()
+
+        if (!categoryName) {
+            return
+        }
+
+        if (
+            categories.some(
+                category =>
+                    category.toLowerCase() === categoryName.toLowerCase()
+            )
+        ) {
+            alert("Category already exists.")
+            return
+        }
+
+        setCategories([...categories, categoryName])
+        setNewCategory("")
+    }
+
+    function handleDeleteCategory(categoryToDelete) {
+        if (categoryToDelete === "None") {
+            alert("The default category cannot be deleted.")
+            return
+        }
+
+        const confirmed = confirm(
+            `Delete category "${categoryToDelete}"?`
+        )
+
+        if (!confirmed) {
+            return
+        }
+
+        setItems(prevItems => // update items that are in the deleted category to have none
+            prevItems.map(item =>
+                item.category === categoryToDelete
+                    ? { ...item, category: "None" }
+                    : item
+            )
+        )
+
+        setCategories( // delete the category from the list
+            categories.filter(
+                category => category !== categoryToDelete
+            )
+        )
     }
 
     return (
@@ -146,6 +202,20 @@ function Inventory({
                     >
                         Bulk Update
                     </button>
+
+                    <button
+                        className="bg-[#E7B79C] text-[#3D2B1F]
+                        px-5 py-2 rounded-xl
+                        border border-[#E9D6C3]
+                        font-serif
+                        hover:bg-[#5a3e36] hover:text-white
+                        hover:shadow-md
+                        active:scale-95
+                        transition"
+                        onClick={() => setCategoryBox(!categoryBox)}
+                    >
+                        Manage Categories
+                    </button>
                 </div>
             </div>
 
@@ -194,10 +264,80 @@ function Inventory({
                 </div>
             )}
 
+            {categoryBox && (
+                <div className="mb-6 bg-[#F1E2D3] border border-[#E9D6C3] rounded-[18px] p-5">
+                    <p className="font-serif text-[#3D2B1F] text-lg mb-3">
+                        Manage Categories
+                    </p>
+
+                    <div className="flex items-center gap-3 mb-4">
+                        <input
+                            value={newCategory}
+                            onChange={(e) => setNewCategory(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    handleAddCategory()
+                                }
+                            }}
+                            placeholder="New category name..."
+                            className="bg-[#FAF7F4] border border-[#E9D6C3]
+                            rounded-xl px-4 py-2 w-[260px]
+                            font-serif text-[#3D2B1F]
+                            focus:outline-none focus:ring-2 focus:ring-[#D98C73]"
+                        />
+
+                        <button
+                            onClick={handleAddCategory}
+                            className="bg-[#E7B79C] text-[#3D2B1F]
+                            px-5 py-2 rounded-xl
+                            border border-[#E9D6C3]
+                            font-serif
+                            hover:bg-[#5a3e36] hover:text-white
+                            transition"
+                        >
+                            Add Category
+                        </button>
+                    </div>
+
+                    <div className="space-y-2">
+                        {categories.map(category => (
+                            <div
+                                key={category}
+                                className="bg-[#FAF7F4] border border-[#E9D6C3]
+                                rounded-xl px-4 py-2 flex items-center justify-between"
+                            >
+                                <span className="font-serif text-[#3D2B1F]">
+                                    {category}
+                                </span>
+
+                                {category === "None" ? (
+                                    <span className="text-sm font-serif text-[#8B7355]">
+                                        Protected
+                                    </span>
+                                ) : (
+                                    <button
+                                        onClick={() => handleDeleteCategory(category)}
+                                        className="px-3 py-1 rounded-lg
+                                        bg-[#E7B79C]
+                                        text-[#3D2B1F]
+                                        font-serif
+                                        hover:bg-[#5a3e36]
+                                        hover:text-white
+                                        transition"
+                                    >
+                                        Delete
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Column Labels */}
-            <div className="grid grid-cols-[1fr_340px_250px_200px_200px] px-6 pb-4 mb-3 text-lg font-serif text-[#3D2B1F]">
+            <div className="grid grid-cols-[1fr_180px_180px_180px_140px] px-6 pb-4 mb-3 text-lg font-serif text-[#3D2B1F]">                
                 <p className="text-center text-xl">Products</p>
-                <p></p>
+                <p className="text-center text-xl">Category</p>
                 <p className="text-center text-xl">Amount</p>
                 <p className="text-center text-xl">Adjust</p>
                 <p className="text-center text-xl">Delete</p>
@@ -208,7 +348,7 @@ function Inventory({
                 {filteredItems.map((item) => (
                     <div
                         key={item.id}
-                        className="grid grid-cols-[1fr_250px_200px_200px]
+                        className="grid grid-cols-[1fr_180px_180px_180px_140px]
                             items-center px-6 py-4 mb-4 bg-[#E7B79C]
                             border border-[#E9D6C3] rounded-[22px]
                             shadow-[0_8px_18px_rgba(61,43,31,0.12)]
@@ -216,43 +356,68 @@ function Inventory({
                             hover:scale-[1.02]
                             transition duration-200"
 
-                    >
+                        >
                         {/* Products */}
                         <div className="flex items-center justify-between">
                         
-                        {/* img and item name */}
-                        <div className="flex items-center gap-6">
-                            <label className="w-24 h-20 bg-white rounded-xl overflow-hidden cursor-pointer group relative">
-                                <img
-                                    src={item.image || placeHolderImg}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover group-hover:opacity-70 transition"
-                                />
+                            {/* img and item name */}
+                            <div className="flex items-center gap-6">
+                                <label className="w-24 h-20 bg-white rounded-xl overflow-hidden cursor-pointer group relative">
+                                    <img
+                                        src={item.image || placeHolderImg}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover group-hover:opacity-70 transition"
+                                    />
 
-                                <div className="absolute inset-0 hidden group-hover:flex items-center justify-center
-                                    bg-black/30 text-white text-xs font-serif">
-                                    Change
-                                </div>
+                                    <div className="absolute inset-0 hidden group-hover:flex items-center justify-center
+                                        bg-black/30 text-white text-xs font-serif">
+                                        Change
+                                    </div>
 
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                        handleUpdateImage(item.id, e.target.files[0])
-                                        e.target.value = ""
-                                    }}
-                                />
-                            </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            handleUpdateImage(item.id, e.target.files[0])
+                                            e.target.value = ""
+                                        }}
+                                    />
+                                </label>
 
-                            <p className="text-xl font-serif text-[#3D2B1F]">
-                            {item.name}
-                            </p>
+                                <p className="text-xl font-serif text-[#3D2B1F]">
+                                {item.name}
+                                </p>
+                            </div>
+
+
+                            {/* divider */}
+                            <div className="w-px h-16 bg-[#5a3e36]"></div>
+
                         </div>
 
-                        {/* divider */}
-                        <div className="w-px h-16 bg-[#5a3e36]"></div>
-
+                        {/* category */}
+                        <div className="flex justify-center">
+                            <select
+                                value={item.category || "Uncategorized"}
+                                onChange={(e) => {
+                                    if (handleCategoryChange) {
+                                        handleCategoryChange(item.id, e.target.value)
+                                    }
+                                }}
+                                className="bg-[#FAF7F4] border border-[#E9D6C3]
+                                    rounded-xl px-3 py-2 font-serif text-[#3D2B1F]
+                                    focus:outline-none focus:ring-2 focus:ring-[#D98C73]"
+                            >
+                                {categories.map(category => (
+                                    <option
+                                        key={category}
+                                        value={category}
+                                    >
+                                        {category}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* count */}
