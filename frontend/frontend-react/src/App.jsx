@@ -12,10 +12,12 @@ function App() {
   const [newItem, setNewItem] = useState("")
   const [searchItem, setSearchItem] = useState("")
   const [selectedImage, setSelectedImage] = useState(null)
-  const [categories, setCategories] = useState(["None"])
 
+  const [categories, setCategories] = useState(["None"])
   const [textBox, setTextBox] = useState(false) // create the text box on the inventory page
   const [bulkUpdate, setBulkUpdate] = useState("") // state to track the value of the bulk update text area
+
+  const [homeSortBy, setHomeSortBy] = useState("all")
 
   const apiBaseUrl = "http://127.0.0.1:8000/api/items/"
   const ledgerApiUrl = "http://127.0.0.1:8000/api/ledger/"
@@ -171,10 +173,10 @@ function App() {
 
     for (const line of lines) {
       const parts = line.split(" ")
-      const addCount = Number(parts[0])
+      const boxes = Number(parts[0])
       const itemName = parts.slice(1).join(" ").trim()
 
-      if (isNaN(addCount) || addCount <= 0 || !itemName) {
+      if (isNaN(boxes) || boxes <= 0 || !itemName) {
         invalidFormat.push(line)
         continue
       }
@@ -188,18 +190,20 @@ function App() {
         continue
       }
 
+      const totalUnitsToAdd = boxes * (existingItem.box_size || 1)
+
       try {
-        await postLedger(existingItem.id, addCount)
+        await postLedger(existingItem.id, totalUnitsToAdd)
 
         setItems(previousItems =>
           previousItems.map(item =>
             item.id === existingItem.id
-              ? { ...item, count: item.count + addCount }
+              ? { ...item, count: item.count + totalUnitsToAdd }
               : item
           )
         )
 
-        updatedItems.push(`${itemName} +${addCount}`)
+        updatedItems.push(`${itemName}: ${boxes} box(es) × ${existingItem.box_size || 1} = +${totalUnitsToAdd}`)
       } catch (err) {
         invalidFormat.push(line)
       }
@@ -341,6 +345,37 @@ function App() {
     }
   }
 
+  async function handleBoxSizeChange(itemId, boxSize) {
+    const newBoxSize = Number(boxSize)
+
+    if (isNaN(newBoxSize) || newBoxSize <= 0) {
+      alert("Box size must be greater than 0.")
+      return
+    }
+
+    try {
+      const response = await fetch(`${apiBaseUrl}${itemId}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ box_size: newBoxSize }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update box size")
+      }
+
+      const updatedItem = await response.json()
+
+      setItems(prevItems =>
+        prevItems.map(item =>
+          item.id === itemId ? updatedItem : item
+        )
+      )
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
 
 
 
@@ -392,12 +427,16 @@ function App() {
             setSelectedImage={setSelectedImage}
             filteredItems={filteredItems}
             handleUpdate={handleUpdate}
+            homeSortBy={homeSortBy}
+            setHomeSortBy={setHomeSortBy}
+            categories={categories}
             />} 
           />
 
           <Route path="/statistics" element={<Statistics 
             items={items}
             lowStockItems={lowStockItems}
+            categories={categories}
             />} 
           />
           
@@ -422,6 +461,7 @@ function App() {
             categories={categories}
             handleAddCategory={handleAddCategory}
             handleDeleteCategory={handleDeleteCategory}
+            handleBoxSizeChange={handleBoxSizeChange}
             />} 
           />
         </Routes>

@@ -22,7 +22,8 @@ function Inventory({
     handleCategoryChange,
     categories,
     handleAddCategory,
-    handleDeleteCategory
+    handleDeleteCategory,
+    handleBoxSizeChange
 }) {
 
     const [dismissLowStockAlert, setDismissLowStockAlert] = useState(false)
@@ -196,7 +197,7 @@ function Inventory({
                     />
 
                     <p className="mt-2 text-sm text-[#5a3e36] font-serif">
-                        Format: "qty. to add" "Item Name"
+                        Format: "boxes to add" "Item Name"
                     </p>
 
                     <button
@@ -286,10 +287,11 @@ function Inventory({
             )}
 
             {/* Column Labels */}
-            <div className="grid grid-cols-[1fr_180px_180px_180px_140px] px-6 pb-4 mb-3 text-lg font-serif text-[#3D2B1F]">                
+            <div className="grid grid-cols-[1fr_160px_140px_140px_180px_140px] px-6 pb-4 mb-3 text-lg font-serif text-[#3D2B1F]">                
                 <p className="text-center text-xl">Products</p>
                 <p className="text-center text-xl">Category</p>
                 <p className="text-center text-xl">Amount</p>
+                <p className="text-center text-xl">Box Size</p>
                 <p className="text-center text-xl">Adjust</p>
                 <p className="text-center text-xl">Delete</p>
             </div>
@@ -299,7 +301,7 @@ function Inventory({
                 {filteredItems.map((item) => (
                     <div
                         key={item.id}
-                        className="grid grid-cols-[1fr_180px_180px_180px_140px]
+                        className="grid grid-cols-[1fr_160px_140px_140px_180px_140px]
                             items-center px-6 py-4 mb-4 bg-[#E7B79C]
                             border border-[#E9D6C3] rounded-[22px]
                             shadow-[0_8px_18px_rgba(61,43,31,0.12)]
@@ -376,6 +378,19 @@ function Inventory({
                             <p className="text-2xl font-serif text-[#3D2B1F]">
                                 {item.count}
                             </p>
+                        </div>
+
+                        {/* box size */}
+                        <div className="flex justify-center">
+                            <input
+                                type="number"
+                                min="1"
+                                defaultValue={item.box_size || 1}
+                                onBlur={(e) => handleBoxSizeChange(item.id, e.target.value)}
+                                className="w-20 bg-[#FAF7F4] border border-[#E9D6C3]
+                                rounded-xl px-3 py-2 text-center font-serif text-[#3D2B1F]
+                                focus:outline-none focus:ring-2 focus:ring-[#D98C73]"
+                            />
                         </div>
 
                         {/* adjust count */}

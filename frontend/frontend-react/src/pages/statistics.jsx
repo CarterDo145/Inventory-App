@@ -1,22 +1,60 @@
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, 
-    Tooltip, ResponsiveContainer } from "recharts"
+    Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { useState, useRef, useEffect } from "react"
 
 
 
 function Statistics({
     items,
-    lowStockItems
+    lowStockItems,
+    categories
 }) {
     const [querySearch, setQuerySearch] = useState("")
     const [selectedReport, setSelectedReport] = useState(null) // state to track which report is selected
-    const [timeFrame, setTimeFrame] = useState("Weekly") // state to track selected time frame for reports that require it
+    const [historyRange, setHistoryRange] = useState("30") // state to track selected time frame for reports that require it
     const [reportData, setReportData] = useState([])
     const [graphSearch, setGraphSearch] = useState("") // state to search specific graphs
     const [popularitySelector, setPopularitySelector] = useState(5) 
     const [dismissLowStockAlert, setDismissLowStockAlert] = useState(false) // state to allow user to dismiss low stock alert on page
 
+    const [trendSortBy, setTrendSortBy] = useState("all")
     const graphRef = useRef(null) // ref to the graph container, so it will scroll down for the user, doesn't rerender when changed
+
+    const lineColors = [
+        "#D98C73",
+        "#C08F72",
+        "#A86F52",
+        "#8A5A44",
+        "#6B4636",
+        "#B87C62",
+        "#D4A48C",
+        "#A9746E",
+        "#7F5539",
+        "#9C6644",
+
+        "#E6A57E",
+        "#D6815A",
+        "#B56576",
+        "#6D597A",
+        "#355070",
+        "#588157",
+        "#A3B18A",
+        "#BC6C25",
+        "#A98467",
+        "#7F4F24",
+
+        "#8E7DBE",
+        "#4D908E",
+        "#577590",
+        "#F28482",
+        "#F6BD60",
+        "#84A59D",
+        "#F5CAC3",
+        "#E5989B",
+        "#9A8C98",
+        "#6C757D"
+    ]
+
 
     useEffect(() => { // scroll automatically to the graph section when the user selects a report
         if (selectedReport && graphRef.current) {
@@ -35,11 +73,11 @@ function Statistics({
         let reportUrl = null
 
         if (selectedReport === "Inventory Trends") {
-            reportUrl = `http://127.0.0.1:8000/api/reports/item-history/?timeFrame=${timeFrame}`
+            reportUrl = `http://127.0.0.1:8000/api/reports/item-history/?timeFrame=Daily`
         }
 
         if (selectedReport === "Most Popular Items") {
-            reportUrl = `http://127.0.0.1:8000/api/reports/most-popular-items/?timeFrame=${timeFrame}&limit=${popularitySelector}`
+            reportUrl = `http://127.0.0.1:8000/api/reports/most-popular-items/?timeFrame=Daily&limit=${popularitySelector}`
         }
 
         if (!reportUrl) {
@@ -57,7 +95,7 @@ function Statistics({
                 setReportData([])
             })
 
-    }, [selectedReport, timeFrame, popularitySelector])
+    }, [selectedReport, popularitySelector])
 
 
     const reports =  [
@@ -86,6 +124,83 @@ function Statistics({
                 currentItemName.localeCompare(comparedItemName)
                 )
             : []
+    
+    const filteredGraphData =
+        selectedReport === "Inventory Trends"
+            ? sortedGraphData.filter(([itemName]) => {
+                if (trendSortBy === "all") {
+                    return true
+                }
+
+                const item = items.find(
+                    item => item.name === itemName
+                )
+
+                if (!item) {
+                    return false
+                }
+
+                return item.category === trendSortBy
+            })
+            : []
+    
+
+    function buildCombinedTrendData(graphEntries) {
+        const periodMap = {}
+
+        graphEntries.forEach(([itemName, history]) => {
+            let runningTotal = 0
+
+            filterHistoryByRange(history).forEach(entry => {
+                runningTotal += entry.change
+
+                if (!periodMap[entry.period]) {
+                    periodMap[entry.period] = { period: entry.period }
+                }
+
+                periodMap[entry.period][itemName] = runningTotal
+            })
+        })
+
+        return Object.values(periodMap).sort((a, b) =>
+            a.period.localeCompare(b.period)
+        )
+    }
+
+    const combinedTrendData = buildCombinedTrendData(filteredGraphData)
+
+    function showCombinedGraph() {
+        return selectedReport === "Inventory Trends" && trendSortBy !== "all"
+    }
+
+    function buildRunningStockHistory(history) {
+        let runningTotal = 0
+
+        return history.map(entry => {
+            runningTotal += entry.change
+
+            return {
+                ...entry,
+                stock: runningTotal
+            }
+        })
+    }
+
+    function filterHistoryByRange(history) {
+        if (historyRange === "all") {
+            return history
+        }
+
+        const cutoffDate = new Date()
+        cutoffDate.setDate(
+            cutoffDate.getDate() - Number(historyRange)
+        )
+
+        return history.filter(entry =>
+            new Date(entry.period) >= cutoffDate
+        )
+    }
+
 
     return (
         <div>
@@ -135,13 +250,14 @@ function Statistics({
                     focus:outline-none focus:ring-2 focus:ring-[#D98C73]
                     cursor-pointer
                     transition"
-                    value={timeFrame}
-                    onChange={(e) => setTimeFrame(e.target.value)}
+                    value={historyRange}
+                    onChange={(e) => setHistoryRange(e.target.value)}
                 >
-                    <option value="Daily">Daily</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Yearly">Yearly</option>
+                    <option value="all">All History</option>
+                    <option value="7">Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                    <option value="60">Last 60 Days</option>
+                    <option value="90">Last 90 Days</option>
                 </select>
             </div>
 
@@ -189,38 +305,99 @@ function Statistics({
                             onChange={(e) => setGraphSearch(e.target.value)}
                         />
 
-                        {sortedGraphData.length === 0 && (
+                        <select
+                            value={trendSortBy}
+                            onChange={(e) => setTrendSortBy(e.target.value)}
+                            className="bg-[#FAF7F4] border border-[#E9D6C3]
+                            rounded-xl px-4 py-2 w-[220px]
+                            text-[#3D2B1F]
+                            font-serif
+                            focus:outline-none focus:ring-2 focus:ring-[#D98C73]
+                            ml-3
+                            cursor-pointer
+                            transition mb-6"
+                        >
+                            <option value="all">Sort By: All</option>
+
+                            {categories.map(category => (
+                                <option key={category.id} value={category.name}>
+                                    {category.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        {filteredGraphData.length === 0 && (
                             <p className="font-serif text-[#5a3e36] mb-4">
                                 No item graphs found.
                             </p>
                         )}
                         
-                        {sortedGraphData.map(([itemName, history]) => (
-                            <div
-                                key={itemName}
-                                className="bg-[#FAF7F4] border border-[#E9D6C3] rounded-[18px] p-5"
-                            >
+                        {showCombinedGraph() ? (
+                            <div className="bg-[#FAF7F4] border border-[#E9D6C3] rounded-[18px] p-5">
                                 <h3 className="text-lg font-serif text-[#3D2B1F] mb-4">
-                                    {itemName}
+                                    {trendSortBy} Inventory Trends
                                 </h3>
 
-                                <div className="w-full h-[260px]">
+                                <div className="w-full h-[350px]">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={history}>
+                                        <LineChart data={combinedTrendData}>
                                             <XAxis dataKey="period" />
                                             <YAxis />
                                             <Tooltip />
-                                            <Line
-                                                type="monotone"
-                                                dataKey="change"
-                                                stroke="#D98C73"
-                                                strokeWidth={3}
+                                            <Legend
+                                                formatter={(value) => (
+                                                    <span className="font-serif text-[#3D2B1F]">
+                                                        {value}
+                                                    </span>
+                                                )}
                                             />
+
+                                            {filteredGraphData.map(([itemName], index) => (
+                                                <Line
+                                                    key={itemName}
+                                                    type="linear"
+                                                    dataKey={itemName}
+                                                    stroke={lineColors[index % lineColors.length]}
+                                                    strokeWidth={3}
+                                                    dot={{ r: 4 }}
+                                                    activeDot={{ r: 6 }}
+                                                    connectNulls={false}
+                                                />
+                                            ))}
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
-                        ))}
+                        ) : (
+                            filteredGraphData.map(([itemName, history]) => (
+                                <div
+                                    key={itemName}
+                                    className="bg-[#FAF7F4] border border-[#E9D6C3] rounded-[18px] p-5"
+                                >
+                                    <h3 className="text-lg font-serif text-[#3D2B1F] mb-4">
+                                        {itemName}
+                                    </h3>
+
+                                    <div className="w-full h-[260px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={buildRunningStockHistory(
+                                                filterHistoryByRange(history)
+                                            )}>
+                                                <XAxis dataKey="period" />
+                                                <YAxis />
+                                                <Tooltip />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="stock"
+                                                    stroke="#D98C73"
+                                                    strokeWidth={3}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 )}
 
